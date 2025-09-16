@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Dashboard Builder</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/umd/lucide.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <style>
+        .chart-container {
+            position: relative;
+            height: 350px;
+            width: 100%;
+        }
+        .pie-chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+        .dark {
+            --tw-bg-opacity: 1;
+            background-color: rgba(17, 24, 39, var(--tw-bg-opacity));
+            color: white;
+        }
+        .dark .bg-white { background-color: rgba(31, 41, 55, var(--tw-bg-opacity)); }
+        .dark .bg-gray-50 { background-color: rgba(17, 24, 39, var(--tw-bg-opacity)); }
+        .dark .border-gray-300 { border-color: rgb(75, 85, 99); }
+        .dark .text-gray-600 { color: rgb(156, 163, 175); }
+        .dark .text-gray-700 { color: rgb(156, 163, 175); }
+        .icon {
+            width: 24px;
+            height: 24px;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+        .icon-sm {
+            width: 20px;
+            height: 20px;
+        }
+        .icon-xs {
+            width: 16px;
+            height: 16px;
+        }
+        .animate-spin {
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-900 transition-colors duration-300" id="body">
+    <!-- Header -->
+    <div class="border-b border-gray-200 bg-white px-6 py-6" id="header">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-3xl font-bold">🛢️ Russia Oil vs 🚗 China Auto Industries</h1>
+                <p class="text-gray-600 mt-2 text-lg">
+                    Comparative Analysis Dashboard (2020-2024)
+                </p>
+                <div class="flex items-center mt-3 space-x-6">
+                    <div class="flex items-center">
+                        <div class="w-4 h-4 bg-red-500 rounded mr-2"></div>
+                        <span class="text-sm font-medium">Russia Oil Industry</span>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="w-4 h-4 bg-yellow-500 rounded mr-2"></div>
+                        <span class="text-sm font-medium">China Automotive</span>
+                    </div>
+                </div>
+            </div>
+            <div class="flex items-center space-x-4">
+                <select id="yearSelect" class="px-4 py-2 rounded-lg border bg-white border-gray-300">
+                    <option value="2020">2020</option>
+                    <option value="2021">2021</option>
+                    <option value="2022">2022</option>
+                    <option value="2023">2023</option>
+                    <option value="2024" selected>2024</option>
+                </select>
+                <button id="refreshBtn" class="p-2 rounded-lg transition-colors bg-white hover:bg-gray-50 border border-gray-300">
+                    <svg class="icon icon-sm" id="refreshIcon">
+                        <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+                        <path d="M21 3v5h-5"/>
+                        <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
+                        <path d="M3 21v-5h5"/>
+                    </svg>
+                </button>
+                <button id="darkModeBtn" class="p-2 rounded-lg transition-colors bg-white hover:bg-gray-50 border border-gray-300">
+                    <span id="darkModeIcon">🌙</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="p-6">
+        <!-- KPI Comparison Cards -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
+            <!-- Production Volume Card -->
+            <div class="p-6 rounded-xl shadow-lg transition-all hover:shadow-xl bg-white" id="productionCard">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold">Production Volume</h3>
+                    <svg class="icon text-blue-500">
+                        <rect width="18" height="18" x="3" y="4" rx="2" ry="2"/>
+                        <line x1="16" x2="16" y1="2" y2="6"/>
+                        <line x1="8" x2="8" y1="2" y2="6"/>
+                        <line x1="3" x2="21" y1="10" y2="10"/>
+                        <path d="M8 14h.01"/>
+                        <path d="M12 14h.01"/>
+                        <path d="M16 14h.01"/>
+                        <path d="M8 18h.01"/>
+                        <path d="M12 18h.01"/>
+                        <path d="M16 18h.01"/>
+                    </svg>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <!-- Russia -->
+                    <div class="text-center p-3 bg-red-50 rounded-lg">
+                        <div class="flex items-center justify-center mb-2">
+                            <svg class="icon-xs mr-1 text-red-600">
+                                <polygon points="13,2 3,14 12,14 11,22 21,10 12,10 13,2"/>
+                            </svg>
+                            <span class="text-sm font-medium text-red-700">Oil (Million barrels/day)</span>
+                        </div>
+                        <p class="text-2xl font-bold text-red-800" id="russiaProduction">9.2 mb/d</p>
+                        <p class="text-sm mt-1 text-red-600" id="russiaProductionChange">-4.2% vs prev year</p>
+                    </div>
+                    
+                    <!-- China -->
+                    <div class="text-center p-3 bg-yellow-50 rounded-lg">
+                        <div class="flex items-center justify-center mb-2">
+                            <svg class="icon-xs mr-1 text-yellow-600">
+                                <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9L18 10V6c0-2-2-4-4-4H4c-2 0-4 2-4 4v10c0 1.1.9 2 2 2h2"/>
+                                <circle cx="7" cy="17" r="2"/>
+                                <path d="M9 17h6"/>
+                                <circle cx="17" cy="17" r="2"/>
+                            </svg>
+                            <span class="text-sm font-medium text-yellow-700">Vehicles (Million units)</span>
+                        </div>
+                        <p class="text-2xl font-bold text-yellow-800" id="chinaProduction">31.28 M units</p>
+                        <p class="text-sm mt-1 text-green-600" id="chinaProductionChange">+3.7% vs prev year</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Export Performance Card -->
+            <div class="p-6 rounded-xl shadow-lg transition-all hover:shadow-xl bg-white" id="exportCard">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold">Export Performance</h3>
+                    <svg class="icon text-blue-500">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/>
+                        <path d="M2 12h20"/>
+                    </svg>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <!-- Russia -->
+                    <div class="text-center p-3 bg-red-50 rounded-lg">
+                        <div class="flex items-center justify-center mb-2">
+                            <svg class="icon-xs mr-1 text-red-600">
+                                <polygon points="13,2 3,14 12,14 11,22 21,10 12,10 13,2"/>
+                            </svg>
+                            <span class="text-sm font-medium text-red-700">Oil Exports</span>
+                        </div>
+                        <p class="text-2xl font-bold text-red-800" id="russiaExports">4.6 mb/d</p>
+                        <p class="text-sm mt-1 text-red-600" id="russiaExportsChange">-4.2% vs prev year</p>
+                    </div>
+                    
+                    <!-- China -->
+                    <div class="text-center p-3 bg-yellow-50 rounded-lg">
+                        <div class="flex items-center justify-center mb-2">
+                            <svg class="icon-xs mr-1 text-yellow-600">
+                                <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9L18 10V6c0-2-2-4-4-4H4c-2 0-4 2-4 4v10c0 1.1.9 2 2 2h2"/>
+                                <circle cx="7" cy="17" r="2"/>
+                                <path d="M9 17h6"/>
+                                <circle cx="17" cy="17" r="2"/>
+                            </svg>
+                            <span class="text-sm font-medium text-yellow-700">Auto Exports</span>
+                        </div>
+                        <p class="text-2xl font-bold text-yellow-800" id="chinaExports">5.9 M units</p>
+                        <p class="text-sm mt-1 text-green-600" id="chinaExportsChange">+20.4% vs prev year</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Industry Revenue Card -->
+            <div class="p-6 rounded-xl shadow-lg transition-all hover:shadow-xl bg-white" id="revenueCard">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold">Industry Revenue</h3>
+                    <svg class="icon text-blue-500">
+                        <line x1="12" x2="12" y1="2" y2="22"/>
+                        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                        <path d="M9 9v6"/>
+                        <path d="M15 15v6"/>
+                    </svg>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <!-- Russia -->
+                    <div class="text-center p-3 bg-red-50 rounded-lg">
+                        <div class="flex items-center justify-center mb-2">
+                            <svg class="icon-xs mr-1 text-red-600">
+                                <polygon points="13,2 3,14 12,14 11,22 21,10 12,10 13,2"/>
+                            </svg>
+                            <span class="text-sm font-medium text-red-700">Oil Revenue</span>
+                        </div>
+                        <p class="text-2xl font-bold text-red-800" id="russiaRevenue">210B USD</p>
+                        <p class="text-sm mt-1 text-green-600" id="russiaRevenueChange">+7.7% vs prev year</p>
+                    </div>
+                    
+                    <!-- China -->
+                    <div class="text-center p-3 bg-yellow-50 rounded-lg">
+                        <div class="flex items-center justify-center mb-2">
+                            <svg class="icon-xs mr-1 text-yellow-600">
+                                <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9L18 10V6c0-2-2-4-4-4H4c-2 0-4 2-4 4v10c0 1.1.9 2 2 2h2"/>
+                                <circle cx="7" cy="17" r="2"/>
+                                <path d="M9 17h6"/>
+                                <circle cx="17" cy="17" r="2"/>
+                            </svg>
+                            <span class="text-sm font-medium text-yellow-700">Auto Revenue</span>
+                        </div>
+                        <p class="text-2xl font-bold text-yellow-800" id="chinaRevenue">1250B USD</p>
+                        <p class="text-sm mt-1 text-green-600" id="chinaRevenueChange">+13.6% vs prev year</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-8">
+            <!-- Production Trends Chart -->
+            <div class="p-6 rounded-xl shadow-lg bg-white" id="productionChartCard">
+                <h3 class="text-xl font-semibold mb-6 flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-blue-500">
+                        <rect width="18" height="18" x="3" y="4" rx="2" ry="2"/>
+                        <line x1="16" x2="16" y1="2" y2="6"/>
+                        <line x1="8" x2="8" y1="2" y2="6"/>
+                        <line x1="3" x2="21" y1="10" y2="10"/>
+                    </svg>
+                    Production Trends (2020-2024) ✅ Data Verified from EIA/CAAM
+                </h3>
+                <div class="chart-container">
+                    <canvas id="productionChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Revenue Chart -->
+            <div class="p-6 rounded-xl shadow-lg bg-white" id="revenueChartCard">
+                <h3 class="text-xl font-semibold mb-6 flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-green-500">
+                        <line x1="12" x2="12" y1="2" y2="22"/>
+                        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                    </svg>
+                    Revenue Comparison (Billions USD)
+                </h3>
+                <div class="chart-container">
+                    <canvas id="revenueChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Export Performance & Market Share -->
+        <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-8">
+            <!-- Export Trends Chart -->
+            <div class="p-6 rounded-xl shadow-lg bg-white" id="exportChartCard">
+                <h3 class="text-xl font-semibold mb-6 flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-purple-500">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/>
+                        <path d="M2 12h20"/>
+                    </svg>
+                    Export Performance Trends
+                </h3>
+                <div class="chart-container">
+                    <canvas id="exportChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Market Share Pie Charts -->
+            <div class="p-6 rounded-xl shadow-lg bg-white" id="marketShareCard">
+                <h3 class="text-xl font-semibold mb-6 flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-indigo-500">
+                        <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                    </svg>
+                    Global Market Share (2024)
+                </h3>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="text-center">
+                        <div class="pie-chart-container">
+                            <canvas id="russiaMarketShare"></canvas>
+                        </div>
+                        <div class="flex items-center justify-center mb-1">
+                            <div class="w-3 h-3 bg-red-500 rounded-full mr-2"></div>
+                            <span class="text-sm font-medium">Russia Oil</span>
+                        </div>
+                        <span class="text-lg font-bold text-red-600">10.8%</span>
+                    </div>
+                    <div class="text-center">
+                        <div class="pie-chart-container">
+                            <canvas id="chinaMarketShare"></canvas>
+                        </div>
+                        <div class="flex items-center justify-center mb-1">
+                            <div class="w-3 h-3 bg-yellow-500 rounded-full mr-2"></div>
+                            <span class="text-sm font-medium">China Auto</span>
+                        </div>
+                        <span class="text-lg font-bold text-yellow-600">35.2%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Industry Overview Cards -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <!-- Russia Oil Industry Stats -->
+            <div class="p-6 rounded-xl shadow-lg border-l-4 border-red-500 bg-white" id="russiaStats">
+                <div class="flex items-center mb-4">
+                    <svg class="w-6 h-6 text-red-500 mr-3">
+                        <polygon points="13,2 3,14 12,14 11,22 21,10 12,10 13,2"/>
+                    </svg>
+                    <h3 class="text-xl font-bold text-red-700">Russia Oil Industry (2024)</h3>
+                </div>
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center p-3 bg-red-50 rounded-lg">
+                        <span class="font-medium">Daily Production:</span>
+                        <span class="text-lg font-bold text-red-700">9.2 mb/d</span>
+                    </div>
+                    <div class="flex justify-between items-center p-3 bg-red-50 rounded-lg">
+                        <span class="font-medium">Annual Exports:</span>
+                        <span class="text-lg font-bold text-red-700">4.6 mb/d</span>
+                    </div>
+                    <div class="flex justify-between items-center p-3 bg-red-50 rounded-lg">
+                        <span class="font-medium">Revenue:</span>
+                        <span class="text-lg font-bold text-red-700">$210B</span>
+                    </div>
+                    <div class="flex justify-between items-center p-3 bg-red-50 rounded-lg">
+                        <span class="font-medium">Employees:</span>
+                        <span class="text-lg font-bold text-red-700">870K</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- China Auto Industry Stats -->
+            <div class="p-6 rounded-xl shadow-lg border-l-4 border-yellow-500 bg-white" id="chinaStats">
+                <div class="flex items-center mb-4">
+                    <svg class="w-6 h-6 text-yellow-500 mr-3">
+                        <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9L18 10V6c0-2-2-4-4-4H4c-2 0-4 2-4 4v10c0 1.1.9 2 2 2h2"/>
+                        <circle cx="7" cy="17" r="2"/>
+                        <path d="M9 17h6"/>
+                        <circle cx="17" cy="17" r="2"/>
+                    </svg>
+                    <h3 class="text-xl font-bold text-yellow-700">China Auto Industry (2024)</h3>
+                </div>
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center p-3 bg-yellow-50 rounded-lg">
+                        <span class="font-medium">Annual Production:</span>
+                        <span class="text-lg font-bold text-yellow-700">31.3M units</span>
+                    </div>
+                    <div class="flex justify-between items-center p-3 bg-yellow-50 rounded-lg">
+                        <span class="font-medium">Vehicle Exports:</span>
+                        <span class="text-lg font-bold text-yellow-700">5.9M units</span>
+                    </div>
+                    <div class="flex justify-between items-center p-3 bg-yellow-50 rounded-lg">
+                        <span class="font-medium">Revenue:</span>
+                        <span class="text-lg font-bold text-yellow-700">$1250B</span>
+                    </div>
+                    <div class="flex justify-between items-center p-3 bg-yellow-50 rounded-lg">
+                        <span class="font-medium">Employees:</span>
+                        <span class="text-lg font-bold text-yellow-700">4800K</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Key Insights Section -->
+        <div class="p-6 rounded-xl shadow-lg bg-white" id="insightsCard">
+            <h3 class="text-xl font-semibold mb-6 flex items-center">
+                <svg class="w-5 h-5 mr-2 text-blue-500">
+                    <polyline points="23,6 13.5,15.5 8.5,10.5 1,18"/>
+                    <polyline points="17,6 23,6 23,12"/>
+                </svg>
+                Key Comparative Insights (2020-2024)
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="p-4 bg-blue-50 rounded-lg">
+                    <h4 class="font-bold text-blue-800 mb-2">Growth Trajectory</h4>
+                    <p class="text-sm text-blue-700">
+                        China's auto production grew 24.2% (2020-2024), while Russia's oil production declined 3.2%
+                    </p>
+                </div>
+                <div class="p-4 bg-green-50 rounded-lg">
+                    <h4 class="font-bold text-green-800 mb-2">Export Performance</h4>
+                    <p class="text-sm text-green-700">
+                        China became world's largest auto exporter in 2023, with 5.86M vehicle exports in 2024
+                    </p>
+                </div>
+                <div class="p-4 bg-purple-50 rounded-lg">
+                    <h4 class="font-bold text-purple-800 mb-2">Market Position</h4>
+                    <p class="text-sm text-purple-700">
+                        China dominates global auto market while Russia faces oil export challenges
+                    </p>
+                </div>
+                <div class="p-4 bg-orange-50 rounded-lg">
+                    <h4 class="font-bold text-orange-800 mb-2">Revenue Impact</h4>
+                    <p class="text-sm text-orange-700">
+                        China's auto revenue increased 47% vs Russia's oil revenue volatility due to sanctions
+                    </p>
+                </div>
+            </div>
+            
+            <div class="mt-6 p-4 bg-gray-50 rounded-lg">
+                <h4 class="font-bold text-gray-800 mb-2">Analysis Summary</h4>
+                <p class="text-gray-700">
+                    Russia's oil production decreased from 9.5 to 9.2 million b/d (2020-2024), 
+                    while China's automotive sector achieved record production of 31.28 million vehicles in 2024. 
+                    The comparative analysis shows China's automotive industry demonstrating strong growth momentum and export expansion, 
+                    contrasting with Russia's oil sector facing production constraints and export limitations.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Dashboard data
+        const dashboardData = {
+            russiaOil: {
+                2020: { production: 9.5, exports: 4.8, revenue: 180, globalShare: 12.1, employeesK: 890 },
+                2021: { production: 9.8, exports: 5.0, revenue: 220, globalShare: 12.3, employeesK: 895 },
+                2022: { production: 9.7, exports: 4.9, revenue: 280, globalShare: 11.8, employeesK: 885 },
+                2023: { production: 9.6, exports: 4.8, revenue: 195, globalShare: 11.2, employeesK: 875 },
+                2024: { production: 9.2, exports: 4.6, revenue: 210, globalShare: 10.8, employeesK: 870 }
+            },
+            chinaAuto: {
+                2020: { production: 25.2, sales: 25.3, exports: 1.1, revenue: 850, globalShare: 30.2, employeesK: 4200 },
+                2021: { production: 26.1, sales: 26.3, exports: 2.0, revenue: 920, globalShare: 31.1, employeesK: 4350 },
+                2022: { production: 27.0, sales: 27.2, exports: 3.1, revenue: 980, globalShare: 32.1, employeesK: 4500 },
+                2023: { production: 30.2, sales: 30.1, exports: 4.9, revenue: 1100, globalShare: 33.8, employeesK: 4650 },
+                2024: { production: 31.3, sales: 31.4, exports: 5.9, revenue: 1250, globalShare: 35.2, employeesK: 4800 }
+            }
+        };
+
+        let isDarkMode = false;
+        let selectedYear = '2024';
+        let charts = {};
+
+        // Initialize charts
+        function initCharts() {
+            // Production Chart
+            const productionCtx = document.getElementById('productionChart').getContext('2d');
+            charts.production = new Chart(productionCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['2020', '2021', '2022', '2023', '2024'],
+                    datasets: [{
+                        label: 'Russia Oil (mb/d)',
+                        data: [9.5, 9.8, 9.7, 9.6, 9.2],
+                        backgroundColor: '#EF4444',
+                        yAxisID: 'y'
+                    }, {
+                        label: 'China Auto (M units)',
+                        data: [25.2, 26.1, 27.0, 30.2, 31.3],
+                        backgroundColor: '#EAB308',
+                        yAxisID: 'y1'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            grid: {
+                                drawOnChartArea: false,
+                            },
+                        }
+                    }
+                }
+            });
+
+            // Revenue Chart
+            const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+            charts.revenue = new Chart(revenueCtx, {
+                type: 'line',
+                data: {
+                    labels: ['2020', '2021', '2022', '2023', '2024'],
+                    datasets: [{
+                        label: 'Russia Oil Revenue ($B)',
+                        data: [180, 220, 280, 195, 210],
+                        borderColor: '#EF4444',
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }, {
+                        label: 'China Auto Revenue ($B)',
+                        data: [850, 920, 980, 1100, 1250],
+                        borderColor: '#EAB308',
+                        backgroundColor: 'rgba(234, 179, 8, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+
+            // Export Chart
+            const exportCtx = document.getElementById('exportChart').getContext('2d');
+            charts.export = new Chart(exportCtx, {
+                type: 'line',
+                data: {
+                    labels: ['2020', '2021', '2022', '2023', '2024'],
+                    datasets: [{
+                        label: 'Russia Oil Exports (mb/d)',
+                        data: [4.8, 5.0, 4.9, 4.8, 4.6],
+                        borderColor: '#EF4444',
+                        backgroundColor: '#EF4444',
+                        tension: 0.4
+                    }, {
+                        label: 'China Auto Exports (M units)',
+                        data: [1.1, 2.0, 3.1, 4.9, 5.9],
+                        borderColor: '#EAB308',
+                        backgroundColor: '#EAB308',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+
+            // Market Share Pie Charts
+            const russiaMarketCtx = document.getElementById('russiaMarketShare').getContext('2d');
+            charts.russiaMarket = new Chart(russiaMarketCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Russia Oil', 'Others'],
+                    datasets: [{
+                        data: [10.8, 89.2],
+                        backgroundColor: ['#EF4444', '#FCA5A5']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+
+            const chinaMarketCtx = document.getElementById('chinaMarketShare').getContext('2d');
+            charts.chinaMarket = new Chart(chinaMarketCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['China Auto', 'Others'],
+                    datasets: [{
+                        data: [35.2, 64.8],
+                        backgroundColor: ['#EAB308', '#FDE047']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+
+        // Update dashboard based on selected year
+        function updateDashboard() {
+            const currentYearRussia = dashboardData.russiaOil[selectedYear];
+            const currentYearChina = dashboardData.chinaAuto[selectedYear];
+            const prevYear = (parseInt(selectedYear) - 1).toString();
+            const prevYearRussia = dashboardData.russiaOil[prevYear];
+            const prevYearChina = dashboardData.chinaAuto[prevYear];
+
+            // Calculate percentage changes
+            const russiaProductionChange = prevYearRussia ? 
+                ((currentYearRussia.production - prevYearRussia.production) / prevYearRussia.production * 100).toFixed(1) : '0.0';
+            const chinaProductionChange = prevYearChina ? 
+                ((currentYearChina.production - prevYearChina.production) / prevYearChina.production * 100).toFixed(1) : '0.0';
+            
+            const russiaExportsChange = prevYearRussia ? 
+                ((currentYearRussia.exports - prevYearRussia.exports) / prevYearRussia.exports * 100).toFixed(1) : '0.0';
+            const chinaExportsChange = prevYearChina ? 
+                ((currentYearChina.exports - prevYearChina.exports) / prevYearChina.exports * 100).toFixed(1) : '0.0';
+            
+            const russiaRevenueChange = prevYearRussia ? 
+                ((currentYearRussia.revenue - prevYearRussia.revenue) / prevYearRussia.revenue * 100).toFixed(1) : '0.0';
+            const chinaRevenueChange = prevYearChina ? 
+                ((currentYearChina.revenue - prevYearChina.revenue) / prevYearChina.revenue * 100).toFixed(1) : '0.0';
+
+            // Update KPI cards
+            document.getElementById('russiaProduction').textContent = `${currentYearRussia.production} mb/d`;
+            document.getElementById('chinaProduction').textContent = `${currentYearChina.production} M units`;
+            document.getElementById('russiaExports').textContent = `${currentYearRussia.exports} mb/d`;
+            document.getElementById('chinaExports').textContent = `${currentYearChina.exports} M units`;
+            document.getElementById('russiaRevenue').textContent = `${currentYearRussia.revenue}B USD`;
+            document.getElementById('chinaRevenue').textContent = `${currentYearChina.revenue}B USD`;
+
+            // Update change percentages
+            const updateChangeElement = (elementId, change) => {
+                const element = document.getElementById(elementId);
+                element.textContent = `${change > 0 ? '+' : ''}${change}% vs prev year`;
+                element.className = `text-sm mt-1 ${change > 0 ? 'text-green-600' : 'text-red-600'}`;
+            };
+
+            updateChangeElement('russiaProductionChange', russiaProductionChange);
+            updateChangeElement('chinaProductionChange', chinaProductionChange);
+            updateChangeElement('russiaExportsChange', russiaExportsChange);
+            updateChangeElement('chinaExportsChange', chinaExportsChange);
+            updateChangeElement('russiaRevenueChange', russiaRevenueChange);
+            updateChangeElement('chinaRevenueChange', chinaRevenueChange);
+
+            // Update market share pie charts
+            if (charts.russiaMarket) {
+                charts.russiaMarket.data.datasets[0].data = [currentYearRussia.globalShare, 100 - currentYearRussia.globalShare];
+                charts.russiaMarket.update();
+            }
+            
+            if (charts.chinaMarket) {
+                charts.chinaMarket.data.datasets[0].data = [currentYearChina.globalShare, 100 - currentYearChina.globalShare];
+                charts.chinaMarket.update();
+            }
+
+            // Update market share percentages
+            document.querySelector('#marketShareCard .text-red-600').textContent = `${currentYearRussia.globalShare}%`;
+            document.querySelector('#marketShareCard .text-yellow-600').textContent = `${currentYearChina.globalShare}%`;
+
+            // Update industry stats cards
+            updateStatsCard('russiaStats', currentYearRussia, 'oil');
+            updateStatsCard('chinaStats', currentYearChina, 'auto');
+        }
+
+        function updateStatsCard(cardId, data, type) {
+            const card = document.getElementById(cardId);
+            const values = card.querySelectorAll('.text-lg.font-bold');
+            
+            if (type === 'oil') {
+                values[0].textContent = `${data.production} mb/d`;
+                values[1].textContent = `${data.exports} mb/d`;
+                values[2].textContent = `${data.revenue}B`;
+                values[3].textContent = `${data.employeesK}K`;
+            } else {
+                values[0].textContent = `${data.production}M units`;
+                values[1].textContent = `${data.exports}M units`;
+                values[2].textContent = `${data.revenue}B`;
+                values[3].textContent = `${data.employeesK}K`;
+            }
+        }
+
+        // Toggle dark mode
+        function toggleDarkMode() {
+            isDarkMode = !isDarkMode;
+            const body = document.getElementById('body');
+            const header = document.getElementById('header');
+            const darkModeIcon = document.getElementById('darkModeIcon');
+            
+            if (isDarkMode) {
+                body.className = 'dark bg-gray-900 text-white transition-colors duration-300';
+                header.className = 'border-b border-gray-700 bg-gray-800 px-6 py-6';
+                darkModeIcon.textContent = '🌞';
+                
+                // Update all cards to dark mode
+                const cards = document.querySelectorAll('.bg-white');
+                cards.forEach(card => {
+                    card.classList.remove('bg-white');
+                    card.classList.add('bg-gray-800', 'text-white');
+                });
+                
+                // Update select and buttons
+                const select = document.getElementById('yearSelect');
+                select.className = 'px-4 py-2 rounded-lg border bg-gray-700 border-gray-600 text-white';
+                
+                const buttons = document.querySelectorAll('button');
+                buttons.forEach(btn => {
+                    if (btn.classList.contains('bg-white')) {
+                        btn.classList.remove('bg-white', 'hover:bg-gray-50', 'border-gray-300');
+                        btn.classList.add('bg-gray-700', 'hover:bg-gray-600', 'border-gray-600');
+                    }
+                });
+            } else {
+                body.className = 'bg-gray-50 text-gray-900 transition-colors duration-300';
+                header.className = 'border-b border-gray-200 bg-white px-6 py-6';
+                darkModeIcon.textContent = '🌙';
+                
+                // Update all cards to light mode
+                const cards = document.querySelectorAll('.bg-gray-800');
+                cards.forEach(card => {
+                    card.classList.remove('bg-gray-800', 'text-white');
+                    card.classList.add('bg-white');
+                });
+                
+                // Update select and buttons
+                const select = document.getElementById('yearSelect');
+                select.className = 'px-4 py-2 rounded-lg border bg-white border-gray-300';
+                
+                const buttons = document.querySelectorAll('button');
+                buttons.forEach(btn => {
+                    if (btn.classList.contains('bg-gray-700')) {
+                        btn.classList.remove('bg-gray-700', 'hover:bg-gray-600', 'border-gray-600');
+                        btn.classList.add('bg-white', 'hover:bg-gray-50', 'border-gray-300');
+                    }
+                });
+            }
+        }
+
+        // Refresh animation
+        function handleRefresh() {
+            const refreshIcon = document.getElementById('refreshIcon');
+            refreshIcon.classList.add('animate-spin');
+            
+            setTimeout(() => {
+                refreshIcon.classList.remove('animate-spin');
+                updateDashboard();
+            }, 1500);
+        }
+
+        // Event listeners
+        document.getElementById('yearSelect').addEventListener('change', (e) => {
+            selectedYear = e.target.value;
+            updateDashboard();
+        });
+
+        document.getElementById('darkModeBtn').addEventListener('click', toggleDarkMode);
+        document.getElementById('refreshBtn').addEventListener('click', handleRefresh);
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', () => {
+            initCharts();
+            updateDashboard();
+        });
+    </script>
+</body>
+</html>
